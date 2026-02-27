@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DealHub Admin – Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #161616;
+      --surface3: #1c1c1c;
+      --border: #222222;
+      --border2: #2a2a2a;
+      --accent: #ff4d1c;
+      --accent2: #ffb800;
+      --green: #22c55e;
+      --text: #f0ede8;
+      --text-muted: #777;
+      --text-dim: #444;
+      --sidebar-w: 220px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 50;
+    }
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 2px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo span { color: var(--accent); }
+    .sidebar-mono {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      display: block;
+      margin-top: 2px;
+    }
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nav-section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 12px 8px 6px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      text-decoration: none;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: rgba(255,77,28,0.12); color: var(--accent); }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .logout-btn {
+      width: 100%;
+      padding: 10px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ===== MAIN ===== */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      padding: 0 32px;
+      height: 60px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: rgba(10,10,10,0.95);
+      backdrop-filter: blur(8px);
+      z-index: 40;
+    }
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .view-site-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .view-site-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    .content {
+      padding: 32px;
+      flex: 1;
+    }
+
+    /* ===== PANELS ===== */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ===== STATS ROW ===== */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      letter-spacing: 1px;
+      color: var(--text);
+    }
+    .stat-value.accent { color: var(--accent); }
+
+    /* ===== SECTION HEADER ===== */
+    .sec-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .sec-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 1px;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn-primary {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-secondary {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 16px;
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { color: var(--text); border-color: var(--border2); }
+    .btn-danger {
+      background: none;
+      border: 1px solid #ff4d4d33;
+      border-radius: 6px;
+      padding: 5px 10px;
+      color: #ff6666;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-danger:hover { background: #ff4d4d22; }
+    .btn-edit {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 5px 10px;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-edit:hover { color: var(--text); border-color: var(--text-dim); }
+
+    /* ===== TABLE ===== */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    td {
+      padding: 14px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+    .td-title { font-weight: 500; max-width: 200px; }
+    .td-url {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .badge-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    .pill-amazon { background: #ff990022; color: #ff9900; }
+    .pill-technik { background: #4a9eff22; color: #4a9eff; }
+    .pill-haushalt { background: #22c55e22; color: #22c55e; }
+    .pill-software { background: #a855f722; color: #a855f7; }
+    .pill-deal { background: rgba(255,77,28,0.15); color: var(--accent); }
+
+    .toggle {
+      width: 36px; height: 20px;
+      background: var(--border2);
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+      border: none;
+      transition: background 0.2s;
+    }
+    .toggle.on { background: var(--green); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 0.2s;
+    }
+    .toggle.on::after { transform: translateX(16px); }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      display: none;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      padding: 24px 28px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 1px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-body {
+      padding: 24px 28px 28px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .form-field {
+      margin-bottom: 16px;
+    }
+    .form-field label {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+    }
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-field textarea { min-height: 70px; resize: vertical; }
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus { border-color: var(--accent); }
+    .form-field select option { background: var(--surface); }
+    .form-hint { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+
+    .modal-footer {
+      padding: 0 28px 24px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+    .checkbox-row label { font-size: 14px; color: var(--text-muted); cursor: pointer; margin: 0; }
+
+    /* ===== CONTENT EDITOR ===== */
+    .content-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .content-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .content-key {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .content-desc { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
+    .content-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+    }
+    .content-input:focus { border-color: var(--accent); }
+    .save-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+    .btn-save-inline {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 6px 14px;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-save-inline:hover { border-color: var(--green); color: var(--green); }
+    .saved-flash {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--green);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .saved-flash.show { opacity: 1; }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: 14px;
+      z-index: 500;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(34,197,94,0.4); }
+    .toast.error { border-color: rgba(255,77,28,0.4); }
+
+    /* ===== LOADING ===== */
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: var(--text-dim);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+    }
+
+    /* ===== CATEGORY TABLE ===== */
+    .cat-icon-input { width: 60px !important; text-align: center; font-size: 20px; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    Deal<span>Hub</span>
+    <span class="sidebar-mono">Admin Panel</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Übersicht</div>
+    <button class="nav-item active" onclick="showPanel('overview')">
+      <span class="nav-icon">⬛</span> Dashboard
+    </button>
+
+    <div class="nav-section-label">Inhalt</div>
+    <button class="nav-item" onclick="showPanel('links')">
+      <span class="nav-icon">🔗</span> Links & Cards
+    </button>
+    <button class="nav-item" onclick="showPanel('categories')">
+      <span class="nav-icon">📂</span> Kategorien
+    </button>
+    <button class="nav-item" onclick="showPanel('sitetext')">
+      <span class="nav-icon">✏️</span> Seiten-Texte
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="logout()">← Abmelden</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">Dashboard</div>
+    <a href="../index.html" target="_blank" class="view-site-btn">Seite ansehen ↗</a>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW PANEL -->
+    <div class="panel active" id="panel-overview">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Aktive Links</div>
+          <div class="stat-value accent" id="statLinks">–</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Kategorien</div>
+          <div class="stat-value" id="statCats">–</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Featured Cards</div>
+          <div class="stat-value" id="statFeatured">–</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Inhalts-Felder</div>
+          <div class="stat-value" id="statContent">–</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Titel</th>
+              <th>Kategorie</th>
+              <th>Preis</th>
+              <th>Aktiv</th>
+              <th>Aktion</th>
+            </tr>
+          </thead>
+          <tbody id="overviewTable">
+            <tr><td colspan="5" class="loading">Lade Daten...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LINKS PANEL -->
+    <div class="panel" id="panel-links">
+      <div class="sec-header">
+        <div class="sec-title">Links & Cards</div>
+        <button class="btn-primary" onclick="openLinkModal()">+ Neuer Link</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Titel</th>
+              <th>URL</th>
+              <th>Kategorie</th>
+              <th>Preis</th>
+              <th>Featured</th>
+              <th>Aktiv</th>
+              <th>Aktionen</th>
+            </tr>
+          </thead>
+          <tbody id="linksTable">
+            <tr><td colspan="7" class="loading">Lade Links...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CATEGORIES PANEL -->
+    <div class="panel" id="panel-categories">
+      <div class="sec-header">
+        <div class="sec-title">Kategorien</div>
+        <button class="btn-primary" onclick="openCatModal()">+ Neue Kategorie</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Icon</th>
+              <th>Name</th>
+              <th>Slug</th>
+              <th>Seite</th>
+              <th>Aktiv</th>
+              <th>Aktionen</th>
+            </tr>
+          </thead>
+          <tbody id="catsTable">
+            <tr><td colspan="6" class="loading">Lade Kategorien...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SITE TEXT PANEL -->
+    <div class="panel" id="panel-sitetext">
+      <div class="sec-header">
+        <div class="sec-title">Seiten-Texte</div>
+      </div>
+      <div class="content-grid" id="contentGrid">
+        <div class="loading">Lade Inhalte...</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- LINK MODAL -->
+<div class="modal-overlay" id="linkModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="linkModalTitle">Neuer Link</div>
+      <button class="modal-close" onclick="closeModal('linkModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="linkId">
+      <div class="form-field">
+        <label>Titel *</label>
+        <input type="text" id="linkTitle" placeholder="z.B. MacBook Air M2">
+      </div>
+      <div class="form-field">
+        <label>Beschreibung</label>
+        <textarea id="linkDesc" placeholder="Kurze Produktbeschreibung..."></textarea>
+      </div>
+      <div class="form-field">
+        <label>Affiliate-URL *</label>
+        <input type="url" id="linkUrl" placeholder="https://amazon.de/dp/...?tag=dein-tag-21">
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Shop-Name</label>
+          <input type="text" id="linkShop" placeholder="Amazon.de">
+        </div>
+        <div class="form-field">
+          <label>Kategorie</label>
+          <select id="linkCategory">
+            <option value="amazon">Amazon</option>
+            <option value="technik">Technik</option>
+            <option value="haushalt">Haushalt</option>
+            <option value="software">Software</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Preis</label>
+          <input type="text" id="linkPrice" placeholder="249 €">
+        </div>
+        <div class="form-field">
+          <label>Originalpreis (durchgestrichen)</label>
+          <input type="text" id="linkOrigPrice" placeholder="299 €">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Badge-Text</label>
+          <input type="text" id="linkBadge" placeholder="z.B. TOP DEAL">
+        </div>
+        <div class="form-field">
+          <label>Badge-Style</label>
+          <select id="linkBadgeType">
+            <option value="badge-deal">Rot (DEAL)</option>
+            <option value="badge-amazon">Orange (AMAZON)</option>
+            <option value="badge-new">Gelb (NEU)</option>
+            <option value="badge-tech">Blau (TECH)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Bild-URL (optional)</label>
+        <input type="url" id="linkImage" placeholder="https://...jpg">
+        <div class="form-hint">Produktbild URL von Amazon oder eigenem Server</div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Sortierung (niedrig = vorne)</label>
+          <input type="number" id="linkOrder" value="0" min="0">
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="linkFeatured">
+        <label for="linkFeatured">Featured Card (breite Darstellung)</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="linkActive" checked>
+        <label for="linkActive">Auf der Hauptseite sichtbar</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('linkModal')">Abbrechen</button>
+      <button class="btn-primary" onclick="saveLink()">Speichern →</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MODAL -->
+<div class="modal-overlay" id="catModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="catModalTitle">Neue Kategorie</div>
+      <button class="modal-close" onclick="closeModal('catModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="catId">
+      <div class="form-row">
+        <div class="form-field">
+          <label>Icon (Emoji)</label>
+          <input type="text" id="catIcon" placeholder="📦" class="cat-icon-input">
+        </div>
+        <div class="form-field">
+          <label>Name *</label>
+          <input type="text" id="catName" placeholder="z.B. Amazon">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Slug (URL-Kennung)</label>
+          <input type="text" id="catSlug" placeholder="z.B. amazon">
+        </div>
+        <div class="form-field">
+          <label>Seite (HTML-Datei)</label>
+          <input type="text" id="catPage" placeholder="amazon.html">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Sortierung</label>
+          <input type="number" id="catOrder" value="0">
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="catActive" checked>
+        <label for="catActive">Sichtbar auf der Hauptseite</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('catModal')">Abbrechen</button>
+      <button class="btn-primary" onclick="saveCat()">Speichern →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg">Gespeichert</span>
+</div>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ============================================
+  // ⚙️ HIER DEINE SUPABASE CREDENTIALS EINTRAGEN
+  // ============================================
+  const SUPABASE_URL = 'https://cczdpkztivfmoqffldaz.supabase.co'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjemRwa3p0aXZmbW9xZmZsZGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNTYxMzIsImV4cCI6MjA4NzczMjEzMn0.Mr2wm08rb5FdhjAA30N_-09dx_LkvBQv4O91QzPFg94'
+  // ============================================
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+  let allLinks = [], allCats = [], allContent = []
+
+  // ===== AUTH CHECK =====
+  async function init() {
+    const { data } = await sb.auth.getSession()
+    if (!data.session) return window.location.href = 'index.html'
+    await loadAll()
+  }
+
+  async function loadAll() {
+    await Promise.all([loadLinks(), loadCategories(), loadContent()])
+    updateStats()
+    renderOverview()
+  }
+
+  async function loadLinks() {
+    const { data } = await sb.from('links').select('*').order('sort_order')
+    allLinks = data || []
+    renderLinks()
+  }
+
+  async function loadCategories() {
+    const { data } = await sb.from('categories').select('*').order('sort_order')
+    allCats = data || []
+    renderCats()
+  }
+
+  async function loadContent() {
+    const { data } = await sb.from('site_content').select('*').order('key')
+    allContent = data || []
+    renderContent()
+  }
+
+  // ===== STATS =====
+  function updateStats() {
+    document.getElementById('statLinks').textContent = allLinks.filter(l => l.active).length
+    document.getElementById('statCats').textContent = allCats.length
+    document.getElementById('statFeatured').textContent = allLinks.filter(l => l.featured).length
+    document.getElementById('statContent').textContent = allContent.length
+  }
+
+  // ===== NAVIGATION =====
+  const panelTitles = { overview: 'Dashboard', links: 'Links & Cards', categories: 'Kategorien', sitetext: 'Seiten-Texte' }
+
+  function showPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+    document.getElementById('panel-' + id).classList.add('active')
+    event.currentTarget.classList.add('active')
+    document.getElementById('topbarTitle').textContent = panelTitles[id] || id
+  }
+
+  // ===== RENDER OVERVIEW =====
+  function renderOverview() {
+    const tbody = document.getElementById('overviewTable')
+    if (!allLinks.length) { tbody.innerHTML = '<tr><td colspan="5" class="loading">Keine Links vorhanden</td></tr>'; return }
+    tbody.innerHTML = allLinks.map(l => `
+      <tr>
+        <td class="td-title">${l.title}</td>
+        <td><span class="badge-pill pill-${l.category}">${l.category}</span></td>
+        <td>${l.price || '–'}</td>
+        <td><button class="toggle ${l.active ? 'on' : ''}" onclick="toggleActive('links', '${l.id}', ${l.active})"></button></td>
+        <td>
+          <button class="btn-edit" onclick="openLinkModal('${l.id}')">Bearbeiten</button>
+        </td>
+      </tr>`).join('')
+  }
+
+  // ===== RENDER LINKS =====
+  function renderLinks() {
+    const tbody = document.getElementById('linksTable')
+    if (!allLinks.length) { tbody.innerHTML = '<tr><td colspan="7" class="loading">Noch keine Links – füge deinen ersten hinzu!</td></tr>'; return }
+    tbody.innerHTML = allLinks.map(l => `
+      <tr>
+        <td class="td-title">${l.title}</td>
+        <td class="td-url"><a href="${l.url}" target="_blank" style="color:inherit">${l.url}</a></td>
+        <td><span class="badge-pill pill-${l.category}">${l.category}</span></td>
+        <td>${l.price || '–'}</td>
+        <td>${l.featured ? '⭐' : '–'}</td>
+        <td><button class="toggle ${l.active ? 'on' : ''}" onclick="toggleActive('links', '${l.id}', ${l.active})"></button></td>
+        <td style="display:flex;gap:6px">
+          <button class="btn-edit" onclick="openLinkModal('${l.id}')">Edit</button>
+          <button class="btn-danger" onclick="deleteRow('links', '${l.id}', loadLinks)">Del</button>
+        </td>
+      </tr>`).join('')
+  }
+
+  // ===== RENDER CATEGORIES =====
+  function renderCats() {
+    const tbody = document.getElementById('catsTable')
+    if (!allCats.length) { tbody.innerHTML = '<tr><td colspan="6" class="loading">Keine Kategorien</td></tr>'; return }
+    tbody.innerHTML = allCats.map(c => `
+      <tr>
+        <td style="font-size:22px">${c.icon}</td>
+        <td style="font-weight:500">${c.name}</td>
+        <td><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)">${c.slug}</span></td>
+        <td style="font-size:13px;color:var(--text-muted)">${c.page_url || '–'}</td>
+        <td><button class="toggle ${c.active ? 'on' : ''}" onclick="toggleActive('categories', '${c.id}', ${c.active})"></button></td>
+        <td style="display:flex;gap:6px">
+          <button class="btn-edit" onclick="openCatModal('${c.id}')">Edit</button>
+          <button class="btn-danger" onclick="deleteRow('categories', '${c.id}', loadCategories)">Del</button>
+        </td>
+      </tr>`).join('')
+  }
+
+  // ===== RENDER CONTENT =====
+  function renderContent() {
+    const grid = document.getElementById('contentGrid')
+    if (!allContent.length) { grid.innerHTML = '<div class="loading">Keine Inhalte</div>'; return }
+    grid.innerHTML = allContent.map(c => `
+      <div class="content-item">
+        <div class="content-key">${c.key}</div>
+        <div class="content-desc">${c.description || ''}</div>
+        <textarea class="content-input" id="content-${c.id}" rows="${c.value.length > 80 ? 3 : 1}">${c.value}</textarea>
+        <div class="save-row">
+          <span class="saved-flash" id="flash-${c.id}">✓ Gespeichert</span>
+          &nbsp;
+          <button class="btn-save-inline" onclick="saveContent('${c.id}')">Speichern</button>
+        </div>
+      </div>`).join('')
+  }
+
+  // ===== LINK MODAL =====
+  function openLinkModal(id) {
+    const link = id ? allLinks.find(l => l.id === id) : null
+    document.getElementById('linkModalTitle').textContent = link ? 'Link bearbeiten' : 'Neuer Link'
+    document.getElementById('linkId').value = link?.id || ''
+    document.getElementById('linkTitle').value = link?.title || ''
+    document.getElementById('linkDesc').value = link?.description || ''
+    document.getElementById('linkUrl').value = link?.url || ''
+    document.getElementById('linkShop').value = link?.shop || 'Amazon.de'
+    document.getElementById('linkCategory').value = link?.category || 'amazon'
+    document.getElementById('linkPrice').value = link?.price || ''
+    document.getElementById('linkOrigPrice').value = link?.original_price || ''
+    document.getElementById('linkBadge').value = link?.badge || ''
+    document.getElementById('linkBadgeType').value = link?.badge_type || 'badge-deal'
+    document.getElementById('linkImage').value = link?.image_url || ''
+    document.getElementById('linkOrder').value = link?.sort_order ?? 0
+    document.getElementById('linkFeatured').checked = link?.featured || false
+    document.getElementById('linkActive').checked = link?.active !== false
+    document.getElementById('linkModal').classList.add('open')
+  }
+
+  async function saveLink() {
+    const id = document.getElementById('linkId').value
+    const title = document.getElementById('linkTitle').value.trim()
+    const url = document.getElementById('linkUrl').value.trim()
+    if (!title || !url) return toast('Titel und URL sind Pflichtfelder', 'error')
+
+    const data = {
+      title, url,
+      description: document.getElementById('linkDesc').value,
+      shop: document.getElementById('linkShop').value || 'Amazon.de',
+      category: document.getElementById('linkCategory').value,
+      price: document.getElementById('linkPrice').value,
+      original_price: document.getElementById('linkOrigPrice').value,
+      badge: document.getElementById('linkBadge').value,
+      badge_type: document.getElementById('linkBadgeType').value,
+      image_url: document.getElementById('linkImage').value,
+      sort_order: parseInt(document.getElementById('linkOrder').value) || 0,
+      featured: document.getElementById('linkFeatured').checked,
+      active: document.getElementById('linkActive').checked
+    }
+
+    let err
+    if (id) {
+      const r = await sb.from('links').update(data).eq('id', id)
+      err = r.error
+    } else {
+      const r = await sb.from('links').insert(data)
+      err = r.error
+    }
+
+    if (err) return toast('Fehler: ' + err.message, 'error')
+    toast('Link gespeichert ✓', 'success')
+    closeModal('linkModal')
+    await loadLinks()
+    renderOverview()
+    updateStats()
+  }
+
+  // ===== CATEGORY MODAL =====
+  function openCatModal(id) {
+    const cat = id ? allCats.find(c => c.id === id) : null
+    document.getElementById('catModalTitle').textContent = cat ? 'Kategorie bearbeiten' : 'Neue Kategorie'
+    document.getElementById('catId').value = cat?.id || ''
+    document.getElementById('catIcon').value = cat?.icon || '📦'
+    document.getElementById('catName').value = cat?.name || ''
+    document.getElementById('catSlug').value = cat?.slug || ''
+    document.getElementById('catPage').value = cat?.page_url || ''
+    document.getElementById('catOrder').value = cat?.sort_order ?? 0
+    document.getElementById('catActive').checked = cat?.active !== false
+    document.getElementById('catModal').classList.add('open')
+  }
+
+  async function saveCat() {
+    const id = document.getElementById('catId').value
+    const name = document.getElementById('catName').value.trim()
+    if (!name) return toast('Name ist ein Pflichtfeld', 'error')
+
+    const data = {
+      name,
+      icon: document.getElementById('catIcon').value || '📦',
+      slug: document.getElementById('catSlug').value || name.toLowerCase(),
+      page_url: document.getElementById('catPage').value,
+      sort_order: parseInt(document.getElementById('catOrder').value) || 0,
+      active: document.getElementById('catActive').checked
+    }
+
+    let err
+    if (id) {
+      const r = await sb.from('categories').update(data).eq('id', id)
+      err = r.error
+    } else {
+      const r = await sb.from('categories').insert(data)
+      err = r.error
+    }
+
+    if (err) return toast('Fehler: ' + err.message, 'error')
+    toast('Kategorie gespeichert ✓', 'success')
+    closeModal('catModal')
+    await loadCategories()
+    updateStats()
+  }
+
+  // ===== CONTENT SAVE =====
+  async function saveContent(id) {
+    const value = document.getElementById('content-' + id).value
+    const { error } = await sb.from('site_content').update({ value }).eq('id', id)
+    if (error) return toast('Fehler: ' + error.message, 'error')
+    const flash = document.getElementById('flash-' + id)
+    flash.classList.add('show')
+    setTimeout(() => flash.classList.remove('show'), 2000)
+    allContent = allContent.map(c => c.id === id ? { ...c, value } : c)
+  }
+
+  // ===== TOGGLE ACTIVE =====
+  async function toggleActive(table, id, current) {
+    const { error } = await sb.from(table).update({ active: !current }).eq('id', id)
+    if (error) return toast('Fehler', 'error')
+    if (table === 'links') { await loadLinks(); renderOverview() }
+    else await loadCategories()
+    updateStats()
+  }
+
+  // ===== DELETE =====
+  async function deleteRow(table, id, reload) {
+    if (!confirm('Wirklich löschen?')) return
+    const { error } = await sb.from(table).delete().eq('id', id)
+    if (error) return toast('Fehler: ' + error.message, 'error')
+    toast('Gelöscht', 'success')
+    await reload()
+    updateStats()
+  }
+
+  // ===== MODAL CLOSE =====
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open')
+  }
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open') })
+  })
+
+  // ===== TOAST =====
+  function toast(msg, type = 'success') {
+    const el = document.getElementById('toast')
+    document.getElementById('toastMsg').textContent = msg
+    document.getElementById('toastIcon').textContent = type === 'success' ? '✓' : '✕'
+    el.className = 'toast show ' + type
+    setTimeout(() => el.className = 'toast ' + type, 3000)
+  }
+
+  // ===== LOGOUT =====
+  async function logout() {
+    await sb.auth.signOut()
+    window.location.href = 'index.html'
+  }
+
+  init()
+</script>
+</body>
+</html>
