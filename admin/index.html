@@ -176,10 +176,10 @@
     const configured = !SUPABASE_URL.includes('DEIN-PROJEKT')
     if (!configured) document.getElementById('configHint').style.display = 'block'
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
     // Schon eingeloggt? → direkt zum Dashboard
-    supabase.auth.getSession().then(({ data }) => {
+    sb.auth.getSession().then(({ data }) => {
       if (data.session) window.location.href = 'dashboard.html'
     })
 
@@ -195,7 +195,7 @@
       btn.disabled = true
       btn.textContent = 'Anmelden...'
 
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { error } = await sb.auth.signInWithPassword({ email, password })
 
       if (error) {
         showError('Login fehlgeschlagen: ' + error.message)
