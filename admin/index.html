@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DealHub Admin – Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #222222;
+      --accent: #ff4d1c;
+      --text: #f0ede8;
+      --text-muted: #666;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(255,77,28,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .login-box {
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      letter-spacing: 3px;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .logo span { color: var(--accent); }
+    .tagline {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .card-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+    .field {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    input {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--accent); }
+    .btn {
+      width: 100%;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: opacity 0.2s;
+      letter-spacing: 0.3px;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error {
+      background: rgba(255,77,28,0.1);
+      border: 1px solid rgba(255,77,28,0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--accent);
+      margin-top: 16px;
+      display: none;
+    }
+    .config-hint {
+      background: rgba(255,184,0,0.08);
+      border: 1px solid rgba(255,184,0,0.2);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 12px;
+      color: #ffb800;
+      margin-bottom: 24px;
+      font-family: 'DM Mono', monospace;
+      line-height: 1.6;
+    }
+    .config-hint strong { display: block; margin-bottom: 4px; font-size: 11px; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="logo">Deal<span>Hub</span></div>
+    <div class="tagline">Admin Panel</div>
+
+    <div class="card">
+      <div class="card-title">Willkommen zurück</div>
+      <div class="card-sub">Melde dich an um Inhalte zu verwalten</div>
+
+      <div class="config-hint" id="configHint" style="display:none">
+        <strong>⚠ Supabase nicht konfiguriert</strong>
+        Öffne diese Datei und trage deine Supabase URL und den Anon Key ein (Zeile ~120).
+      </div>
+
+      <div class="field">
+        <label>E-Mail</label>
+        <input type="email" id="email" placeholder="admin@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Passwort</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <button class="btn" id="loginBtn" onclick="login()">Anmelden →</button>
+      <div class="error" id="error"></div>
+    </div>
+  </div>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ============================================
+    // ⚙️ HIER DEINE SUPABASE CREDENTIALS EINTRAGEN
+    // ============================================
+    const SUPABASE_URL = 'https://cczdpkztivfmoqffldaz.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjemRwa3p0aXZmbW9xZmZsZGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNTYxMzIsImV4cCI6MjA4NzczMjEzMn0.Mr2wm08rb5FdhjAA30N_-09dx_LkvBQv4O91QzPFg94'
+    // ============================================
+
+    const configured = !SUPABASE_URL.includes('DEIN-PROJEKT')
+    if (!configured) document.getElementById('configHint').style.display = 'block'
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    // Schon eingeloggt? → direkt zum Dashboard
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) window.location.href = 'dashboard.html'
+    })
+
+    async function login() {
+      if (!configured) return showError('Bitte erst Supabase konfigurieren.')
+
+      const email = document.getElementById('email').value.trim()
+      const password = document.getElementById('password').value
+      const btn = document.getElementById('loginBtn')
+
+      if (!email || !password) return showError('Bitte E-Mail und Passwort eingeben.')
+
+      btn.disabled = true
+      btn.textContent = 'Anmelden...'
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (error) {
+        showError('Login fehlgeschlagen: ' + error.message)
+        btn.disabled = false
+        btn.textContent = 'Anmelden →'
+      } else {
+        window.location.href = 'dashboard.html'
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error')
+      el.textContent = msg
+      el.style.display = 'block'
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') login()
+    })
+  </script>
+</body>
+</html>
